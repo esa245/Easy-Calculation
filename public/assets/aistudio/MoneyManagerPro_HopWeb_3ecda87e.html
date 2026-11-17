@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#f5f7fb">
+<title>Money Manager Pro</title>
+<style>
+:root{--green:#168653;--green2:#e7f6ee;--ink:#172334;--muted:#7b8796;--bg:#f4f6fa;--white:#fff;--red:#df5353;--blue:#3478df;--purple:#8957d8;--line:#edf0f4}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Roboto,"Noto Sans Bengali",Arial,sans-serif;color:var(--ink);padding-bottom:84px}button,input,select{font:inherit}button{cursor:pointer}
+.appbar{height:62px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#fff;position:sticky;top:0;z-index:5;box-shadow:0 2px 8px #1723340a}.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px}.brandicon{width:36px;height:36px;border-radius:12px;background:var(--green2);color:var(--green);display:grid;place-items:center;font-size:22px}.iconbtn{border:0;background:transparent;font-size:22px;color:#455266;padding:8px}
+main{max-width:620px;margin:auto;padding:16px}.hello{font-size:13px;color:var(--muted);margin:4px 2px 13px}.balance{background:linear-gradient(135deg,#137c50,#20a66a);color:white;border-radius:23px;padding:21px;box-shadow:0 9px 22px #16865330}.balance small{opacity:.85;font-size:13px}.balance h1{font-size:32px;margin:8px 0 15px;letter-spacing:.2px}.balancefoot{display:flex;justify-content:space-between;font-size:12px;opacity:.9}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:14px 0}.stat{background:white;border-radius:17px;padding:15px;box-shadow:0 3px 13px #17233408}.stathead{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}.bubble{width:29px;height:29px;border-radius:10px;display:grid;place-items:center;font-size:16px}.stat strong{display:block;font-size:19px;margin-top:10px}.income{color:var(--green)}.expense{color:var(--red)}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;margin:21px 2px 11px}.sectionhead h2{font-size:16px;margin:0}.link{border:0;background:none;color:var(--green);font-size:12px;font-weight:700}
+.periods{display:flex;gap:7px;overflow:auto;padding:2px 0 7px}.period{border:1px solid #e5e9ef;background:white;border-radius:22px;padding:9px 15px;color:#667386;white-space:nowrap;font-size:12px}.period.active{background:var(--ink);color:white;border-color:var(--ink)}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.quick button{border:0;background:#fff;border-radius:15px;padding:13px 4px;color:var(--ink);box-shadow:0 3px 12px #17233408}.quick i{font-style:normal;display:grid;place-items:center;margin:0 auto 7px;width:38px;height:38px;border-radius:13px;background:var(--green2);color:var(--green);font-size:21px}.quick span{font-size:11px}
+.txlist{display:flex;flex-direction:column;gap:9px}.tx{background:white;border-radius:15px;padding:12px;display:flex;align-items:center;gap:11px;box-shadow:0 2px 10px #17233408}.txicon{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-size:18px}.txbody{flex:1;min-width:0}.txbody b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.txbody small{color:var(--muted);font-size:11px}.txamount{font-size:13px;font-weight:800;white-space:nowrap}.empty{text-align:center;color:var(--muted);background:#fff;padding:25px;border-radius:15px;font-size:13px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 5px max(8px,env(safe-area-inset-bottom));z-index:10}.nav button{border:0;background:none;color:#8490a0;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;min-width:58px}.nav button .ni{font-size:21px}.nav button.active{color:var(--green);font-weight:800}
+.fab{position:fixed;right:20px;bottom:82px;width:57px;height:57px;border:0;border-radius:19px;background:var(--green);color:#fff;font-size:30px;box-shadow:0 7px 18px #16865355;z-index:6}
+.page{display:none}.page.active{display:block}
+.card{background:#fff;border-radius:17px;padding:16px;margin-bottom:12px;box-shadow:0 3px 13px #17233408}.card h3{margin:0 0 12px;font-size:15px}.reportrow{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px}.reportrow:last-child{border:0}
+.modal{display:none;position:fixed;inset:0;background:#10182780;z-index:30;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{background:#fff;width:100%;max-width:620px;border-radius:23px 23px 0 0;padding:20px 18px max(22px,env(safe-area-inset-bottom));max-height:92vh;overflow:auto}.sheethead{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.sheethead h2{font-size:18px;margin:0}.close{border:0;background:#f0f2f5;border-radius:50%;width:34px;height:34px;font-size:19px}
+.field{margin:12px 0}.field label{display:block;font-size:12px;color:#596579;margin-bottom:6px}.field input,.field select{width:100%;border:1px solid #dfe5ec;border-radius:12px;padding:13px;background:#fff;outline:none;color:var(--ink)}.types{display:flex;gap:8px}.types button{flex:1;padding:11px;border-radius:12px;border:1px solid #dfe5ec;background:#fff;color:#596579}.types button.sel{background:var(--green2);border-color:var(--green);color:var(--green);font-weight:800}.save{width:100%;border:0;border-radius:13px;background:var(--green);color:#fff;padding:14px;font-weight:800;margin-top:9px}.hint{font-size:11px;color:var(--muted);line-height:1.6}
+@media(min-width:650px){main{padding:22px}.fab{right:calc((100vw - 620px)/2 + 20px)}}
+</style>
+</head>
+<body>
+<header class="appbar">
+ <div class="brand"><span class="brandicon">৳</span><span>Money Manager Pro</span></div>
+ <button class="iconbtn" onclick="showPage('settings')" aria-label="সেটিংস">⚙</button>
+</header>
+<main>
+ <section id="home" class="page active">
+  <div class="hello" id="helloDate">আপনার হিসাব, আপনার নিয়ন্ত্রণ</div>
+  <div class="balance">
+   <small>বর্তমান ব্যালেন্স</small>
+   <h1 id="balance">৳০</h1>
+   <div class="balancefoot"><span>মোট জমা: <b id="balanceIn">৳০</b></span><span>মোট খরচ: <b id="balanceOut">৳০</b></span></div>
+  </div>
+  <div class="summary">
+   <div class="stat"><div class="stathead"><span class="bubble" style="background:#e7f6ee;color:#168653">↙</span> মোট জমা / আয়</div><strong class="income" id="income">৳০</strong></div>
+   <div class="stat"><div class="stathead"><span class="bubble" style="background:#ffeded;color:#df5353">↗</span> মোট খরচ</div><strong class="expense" id="expense">৳০</strong></div>
+  </div>
+  <div class="sectionhead"><h2>হিসাবের সময়</h2></div>
+  <div class="periods" id="periods">
+   <button class="period active" data-period="all">সার্বিক</button><button class="period" data-period="day">দৈনিক</button><button class="period" data-period="week">সাপ্তাহিক</button><button class="period" data-period="month">মাসিক</button>
+  </div>
+  <div class="sectionhead"><h2>দ্রুত লেনদেন</h2></div>
+  <div class="quick">
+   <button onclick="openAdd('in','দৈনিক')"><i>＋</i><span>জমা</span></button>
+   <button onclick="openAdd('out','দৈনিক')"><i style="background:#ffeded;color:#df5353">−</i><span>খরচ</span></button>
+   <button onclick="openAdd('in','সাপ্তাহিক')"><i>▦</i><span>সাপ্তাহিক</span></button>
+   <button onclick="openAdd('in','মাসিক')"><i>▣</i><span>মাসিক</span></button>
+  </div>
+  <div class="sectionhead"><h2>সাম্প্রতিক লেনদেন</h2><button class="link" onclick="showPage('transactions')">সব দেখুন</button></div>
+  <div class="txlist" id="recent"></div>
+ </section>
+ <section id="transactions" class="page">
+  <div class="sectionhead"><h2>সকল লেনদেন</h2><button class="link" onclick="openAdd()">＋ নতুন যোগ</button></div>
+  <div class="periods" id="txPeriods"><button class="period active" data-filter="all">সব</button><button class="period" data-filter="in">জমা</button><button class="period" data-filter="out">খরচ</button></div>
+  <div class="txlist" id="allTransactions"></div>
+ </section>
+ <section id="reports" class="page">
+  <div class="sectionhead"><h2>রিপোর্ট ও সারাংশ</h2></div>
+  <div class="card"><h3>সর্বমোট হিসাব</h3><div class="reportrow"><span>মোট জমা / আয়</span><b class="income" id="rIn">৳০</b></div><div class="reportrow"><span>মোট খরচ / উত্তোলন</span><b class="expense" id="rOut">৳০</b></div><div class="reportrow"><span>বর্তমান ব্যালেন্স</span><b id="rBal">৳০</b></div><div class="reportrow"><span>মোট লেনদেন</span><b id="rCount">০</b></div></div>
+  <div class="card"><h3>ডেটা রিপোর্ট</h3><p class="hint">CSV ফাইল Excel-এ খোলা যাবে। প্রিন্ট অপশন দিয়ে PDF হিসেবে সংরক্ষণ করতে পারো।</p><button class="save" onclick="exportCSV()">CSV রিপোর্ট ডাউনলোড</button><button class="save" style="background:#26364b" onclick="window.print()">প্রিন্ট / PDF</button></div>
+ </section>
+ <section id="settings" class="page">
+  <div class="sectionhead"><h2>সেটিংস</h2></div>
+  <div class="card"><h3>Money Manager Pro</h3><p class="hint">ভার্সন 1.0 • বাংলা হিসাব ব্যবস্থাপনা</p><div class="reportrow"><span>সংরক্ষিত লেনদেন</span><b id="settingCount">০</b></div></div>
+  <div class="card"><h3>ডেটা ব্যবস্থাপনা</h3><p class="hint">এই ডেমো অ্যাপের তথ্য একই ব্রাউজার / WebView-এর লোকাল স্টোরেজে থাকে। অ্যাপের ডেটা মুছে ফেললে তথ্য হারাতে পারে।</p><button class="save" style="background:#df5353" onclick="clearData()">সব হিসাব মুছে ফেলুন</button></div>
+ </section>
+</main>
+<button class="fab" onclick="openAdd()" aria-label="নতুন লেনদেন">＋</button>
+<nav class="nav">
+ <button class="active" data-page="home"><span class="ni">⌂</span>হোম</button>
+ <button data-page="transactions"><span class="ni">▤</span>লেনদেন</button>
+ <button data-page="reports"><span class="ni">▥</span>রিপোর্ট</button>
+ <button data-page="settings"><span class="ni">⚙</span>সেটিংস</button>
+</nav>
+<div class="modal" id="modal" onclick="if(event.target===this)closeAdd()">
+ <div class="sheet">
+  <div class="sheethead"><h2>নতুন লেনদেন যোগ করুন</h2><button class="close" onclick="closeAdd()">×</button></div>
+  <form id="entry">
+   <div class="field"><label>লেনদেনের বিবরণ</label><input id="desc" placeholder="যেমন: সদস্যের সাপ্তাহিক জমা" required></div>
+   <div class="field"><label>টাকার পরিমাণ (৳)</label><input id="amount" type="number" min="1" step="0.01" placeholder="500" required></div>
+   <div class="field"><label>লেনদেনের ধরন</label><div class="types"><button type="button" id="typeIn" class="sel" onclick="setType('in')">জমা / আয়</button><button type="button" id="typeOut" onclick="setType('out')">খরচ / উত্তোলন</button></div></div>
+   <div class="field"><label>হিসাবের সময়</label><select id="category"><option>দৈনিক</option><option>সাপ্তাহিক</option><option>মাসিক</option><option>অন্যান্য</option></select></div>
+   <div class="field"><label>তারিখ</label><input id="date" type="date" required></div>
+   <button class="save" type="submit">লেনদেন সংরক্ষণ করুন</button>
+  </form>
+ </div>
+</div>
+<script>
+const KEY='mmp_hopweb_v1';let data=[];try{data=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){data=[]}
+let period='all',txFilter='all',kind='in';
+const $=id=>document.getElementById(id);
+const today=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const taka=n=>'৳'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+$('date').value=today();
+$('helloDate').textContent=new Date().toLocaleDateString('bn-BD',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function selectedRows(){let now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),now.getDate());return data.filter(x=>{let d=new Date(x.date+'T00:00:00');if(period==='day')return x.date===today();if(period==='week'){let s=new Date(start);s.setDate(s.getDate()-((s.getDay()+6)%7));return d>=s&&d<=start}if(period==='month')return x.date.slice(0,7)===today().slice(0,7);return true})}
+function rowHTML(x){return `<div class="tx"><div class="txicon" style="background:${x.type==='in'?'#e7f6ee':'#ffeded'};color:${x.type==='in'?'#168653':'#df5353'}">${x.type==='in'?'↓':'↑'}</div><div class="txbody"><b>${esc(x.desc)}</b><small>${esc(x.date)} • ${esc(x.category)}</small></div><div class="txamount" style="color:${x.type==='in'?'#168653':'#df5353'}">${x.type==='in'?'+':'−'}${taka(x.amount)}<br><button class="link" onclick="removeTx(${x.id})">মুছুন</button></div></div>`}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){
+ let list=selectedRows(),inc=list.filter(x=>x.type==='in').reduce((a,x)=>a+x.amount,0),out=list.filter(x=>x.type==='out').reduce((a,x)=>a+x.amount,0);
+ $('income').textContent=taka(inc);$('expense').textContent=taka(out);$('balance').textContent=taka(inc-out);$('balanceIn').textContent=taka(inc);$('balanceOut').textContent=taka(out);
+ let recent=[...list].sort((a,b)=>b.id-a.id).slice(0,5);$('recent').innerHTML=recent.length?recent.map(rowHTML).join(''):'<div class="empty">এখনো কোনো লেনদেন নেই। ＋ বাটনে চাপ দিয়ে শুরু করুন।</div>';
+ let all=[...data].sort((a,b)=>b.id-a.id).filter(x=>txFilter==='all'||x.type===txFilter);$('allTransactions').innerHTML=all.length?all.map(rowHTML).join(''):'<div class="empty">কোনো লেনদেন পাওয়া যায়নি।</div>';
+ let totalIn=data.filter(x=>x.type==='in').reduce((a,x)=>a+x.amount,0),totalOut=data.filter(x=>x.type==='out').reduce((a,x)=>a+x.amount,0);
+ $('rIn').textContent=taka(totalIn);$('rOut').textContent=taka(totalOut);$('rBal').textContent=taka(totalIn-totalOut);$('rCount').textContent=data.length.toLocaleString('bn-BD');$('settingCount').textContent=data.length.toLocaleString('bn-BD');
+}
+function openAdd(type,cat){kind=type||'in';$('category').value=cat||'দৈনিক';$('date').value=today();$('desc').value='';$('amount').value='';setType(kind);$('modal').classList.add('show')}
+function closeAdd(){$('modal').classList.remove('show')}
+function setType(t){kind=t;$('typeIn').classList.toggle('sel',t==='in');$('typeOut').classList.toggle('sel',t==='out')}
+$('entry').addEventListener('submit',e=>{e.preventDefault();let amount=Number($('amount').value);if(!$('desc').value.trim()||!Number.isFinite(amount)||amount<=0){alert('সঠিক বিবরণ ও টাকার পরিমাণ দিন');return}data.push({id:Date.now(),desc:$('desc').value.trim(),amount,type:kind,date:$('date').value,category:$('category').value});save();closeAdd()});
+function removeTx(id){if(confirm('এই লেনদেন মুছবেন?')){data=data.filter(x=>x.id!==id);save()}}
+function clearData(){if(confirm('সব লেনদেন মুছে ফেলবেন? এই কাজ ফিরিয়ে আনা যাবে না।')){data=[];save()}}
+function showPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===p));document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===p));window.scrollTo(0,0)}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+document.querySelectorAll('#periods button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#periods button').forEach(x=>x.classList.remove('active'));b.classList.add('active');period=b.dataset.period;render()}));
+document.querySelectorAll('#txPeriods button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#txPeriods button').forEach(x=>x.classList.remove('active'));b.classList.add('active');txFilter=b.dataset.filter;render()}));
+function exportCSV(){let lines=[['Date','Description','Type','Category','Amount'],...data.map(x=>[x.date,x.desc,x.type,x.category,x.amount])];let csv='\uFEFF'+lines.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');let a=document.createElement('a');let u=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.href=u;a.download='MoneyManagerPro.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+render();
+</script>
+</body>
+</html>

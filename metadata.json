@@ -1,0 +1,6 @@
+{
+  "name": "Money Manager Pro — মাসিক, সাপ্তাহিক ও দৈনিক টাকার হিসাব",
+  "description": "সহজ ও আধুনিক বাংলা টাকা হিসাব সফটওয়্যার — দৈনিক, সাপ্তাহিক ও মাসিক আয়-ব্যয়, বাজেট নিয়ন্ত্রণ এবং রিপোর্ট ব্যবস্থাপনা।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

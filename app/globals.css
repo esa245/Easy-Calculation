@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --font-sans: var(--font-bengali), var(--font-latin), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-bengali), var(--font-mono-code), ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html,
+  body {
+    font-family: var(--font-bengali), var(--font-latin), ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+.tabular-nums {
+  font-family: var(--font-bengali), var(--font-latin), sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+}
