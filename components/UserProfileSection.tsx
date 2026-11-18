@@ -313,7 +313,7 @@ export default function UserProfileSection({
   }
 
   // ==================== 2. NOT LOGGED IN - COLLAPSED SLIM BANNER ====================
-  if (isCollapsed) {
+  if (isCollapsed && variant === 'top') {
     return (
       <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-white border border-[#137C50]/25 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-2xs">
         <div className="flex items-center gap-2.5 min-w-0">

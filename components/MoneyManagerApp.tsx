@@ -963,23 +963,6 @@ export default function MoneyManagerApp() {
 
         {/* Page Body */}
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 lg:py-7 space-y-6">
-          {/* ==================== TOP PROFILE & ACCOUNT ACTIVATION (সবার ওপরে) ==================== */}
-          <div className="no-print">
-            <UserProfileSection
-              variant="top"
-              onToast={showToast}
-              onNavigateToDrive={() => setActiveNav('settings-drive')}
-              onNameActivated={(name) => {
-                if (name && (!settings.accountTitle || settings.accountTitle === 'সহজ হিসাব')) {
-                  updateSettings({
-                    ...settings,
-                    accountTitle: `${name} এর হিসাব`,
-                  });
-                }
-              }}
-            />
-          </div>
-
           {/* ==================== HOME / PERIOD WORKSPACE ==================== */}
           {(activeNav === 'home' ||
             activeNav === 'daily' ||
@@ -1667,6 +1650,21 @@ export default function MoneyManagerApp() {
           {/* ==================== SETTINGS MENU (UNIFORM ICON CARDS) ==================== */}
           {activeNav === 'settings' && (
             <section className="max-w-3xl space-y-4">
+              {/* Profile & Account Section with Logout Button (খালি সেটিংস এর ভেতরে থাকবে) */}
+              <UserProfileSection
+                variant="settings"
+                onToast={showToast}
+                onNavigateToDrive={() => setActiveNav('settings-drive')}
+                onNameActivated={(name) => {
+                  if (name && (!settings.accountTitle || settings.accountTitle === 'সহজ হিসাব')) {
+                    updateSettings({
+                      ...settings,
+                      accountTitle: `${name} এর হিসাব`,
+                    });
+                  }
+                }}
+              />
+
               <PWAInstallButton variant="card" onToast={showToast} />
 
               <button
