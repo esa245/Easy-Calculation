@@ -81,17 +81,24 @@ export function usePWAInstall() {
     getPromptSnapshot,
     getServerPromptSnapshot
   );
-  const isStandalone = useSyncExternalStore(
-    subscribeInstallEvents,
-    getStandaloneSnapshot,
-    getServerFalse
-  );
-  const isIOS = useSyncExternalStore(
-    subscribeNoop,
-    getIOSSnapshot,
-    getServerFalse
-  );
+  const [isStandalone, setIsStandalone] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   const [acceptedThisSession, setAcceptedThisSession] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const checkState = () => {
+      const standalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+      setIsStandalone(standalone);
+      setIsIOS(/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()));
+    };
+    checkState();
+    const mql = window.matchMedia('(display-mode: standalone)');
+    mql.addEventListener('change', checkState);
+    return () => mql.removeEventListener('change', checkState);
+  }, []);
 
   const isInstalled = isStandalone || acceptedThisSession;
 

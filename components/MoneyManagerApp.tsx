@@ -162,6 +162,13 @@ export default function MoneyManagerApp() {
     setDraftOverride(next);
   };
 
+  // Mounted state for safe client hydration
+  const isMounted = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false
+  );
+
   // Firebase Auth user state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
@@ -789,6 +796,19 @@ export default function MoneyManagerApp() {
       </div>
     </div>
   );
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-[#F6F8FA] flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-[#E7F6EE] text-[#137C50] flex items-center justify-center font-bold text-2xl shadow-xs animate-pulse">
+            ৳
+          </div>
+          <p className="text-sm font-semibold text-slate-700">সহজ হিসাব প্রস্তুত হচ্ছে...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F6F8FA] text-[#0F172A] flex flex-col lg:flex-row">
