@@ -21,6 +21,8 @@ interface TransactionModalProps {
   initialType?: TransactionType;
   initialCadence?: Cadence;
   initialDate?: string;
+  initialAmount?: number;
+  initialDesc?: string;
   editingTx?: Transaction | null;
   useBengaliDigits: boolean;
   incomeCategories: string[];
@@ -37,6 +39,8 @@ function TransactionModalBody({
   initialType = 'in',
   initialCadence = 'দৈনিক',
   initialDate,
+  initialAmount,
+  initialDesc,
   editingTx,
   useBengaliDigits,
   incomeCategories,
@@ -60,8 +64,14 @@ function TransactionModalBody({
       ? safeIncomeCats[0]
       : safeExpenseCats[0]
   );
-  const [desc, setDesc] = useState(editingTx ? editingTx.desc : '');
-  const [amount, setAmount] = useState(editingTx ? String(editingTx.amount) : '');
+  const [desc, setDesc] = useState(editingTx ? editingTx.desc : initialDesc ?? '');
+  const [amount, setAmount] = useState(
+    editingTx
+      ? String(editingTx.amount)
+      : initialAmount !== undefined && initialAmount > 0
+      ? String(initialAmount)
+      : ''
+  );
   const [date, setDate] = useState(
     editingTx ? editingTx.date : initialDate || getTodayISO()
   );
@@ -389,6 +399,8 @@ export default function TransactionModal({
   initialType = 'in',
   initialCadence = 'দৈনিক',
   initialDate,
+  initialAmount,
+  initialDesc,
   editingTx,
   useBengaliDigits,
   incomeCategories,
@@ -398,7 +410,7 @@ export default function TransactionModal({
 }: TransactionModalProps) {
   const formKey = editingTx
     ? `edit_${editingTx.id}`
-    : `new_${initialType}_${initialCadence}_${initialDate ?? 'today'}_${incomeCategories[0] ?? ''}_${expenseCategories[0] ?? ''}`;
+    : `new_${initialType}_${initialCadence}_${initialDate ?? 'today'}_${initialAmount ?? ''}_${initialDesc ?? ''}_${incomeCategories[0] ?? ''}_${expenseCategories[0] ?? ''}`;
 
   return (
     <AnimatePresence>
@@ -425,6 +437,8 @@ export default function TransactionModal({
             initialType={initialType}
             initialCadence={initialCadence}
             initialDate={initialDate}
+            initialAmount={initialAmount}
+            initialDesc={initialDesc}
             editingTx={editingTx}
             useBengaliDigits={useBengaliDigits}
             incomeCategories={incomeCategories}

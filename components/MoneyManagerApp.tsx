@@ -5,6 +5,7 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   BarChart3,
+  Calculator,
   Calendar,
   CalendarCheck,
   CalendarDays,
@@ -34,10 +35,12 @@ import {
   UserCheck,
   Wallet,
 } from 'lucide-react';
+import { AnimatePresence } from 'motion/react';
 import CashflowChart, { ChartGranularity } from '@/components/CashflowChart';
 import CategoryManager from '@/components/CategoryManager';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import GoogleDriveSync from '@/components/GoogleDriveSync';
+import HisabCalculatorModal, { CalculatorTab } from '@/components/HisabCalculatorModal';
 import MonthlyArchiveManager from '@/components/MonthlyArchiveManager';
 import PWAInstallButton from '@/components/PWAInstallButton';
 import TransactionModal from '@/components/TransactionModal';
@@ -142,7 +145,11 @@ export default function MoneyManagerApp() {
   const [modalInitialType, setModalInitialType] = useState<TransactionType>('in');
   const [modalInitialCadence, setModalInitialCadence] = useState<Cadence>('দৈনিক');
   const [modalInitialDate, setModalInitialDate] = useState<string | undefined>(undefined);
+  const [modalInitialAmount, setModalInitialAmount] = useState<number | undefined>(undefined);
+  const [modalInitialDesc, setModalInitialDesc] = useState<string | undefined>(undefined);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [calculatorInitialTab, setCalculatorInitialTab] = useState<CalculatorTab>('receipt');
 
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
@@ -285,11 +292,15 @@ export default function MoneyManagerApp() {
     setModalInitialType(type);
     setModalInitialCadence(cadence);
     setModalInitialDate(defaultDate || todayISO);
+    setModalInitialAmount(undefined);
+    setModalInitialDesc(undefined);
     setModalOpen(true);
   };
 
   const openEditModal = (tx: Transaction) => {
     setEditingTx(tx);
+    setModalInitialAmount(undefined);
+    setModalInitialDesc(undefined);
     setModalOpen(true);
   };
 
@@ -937,6 +948,20 @@ export default function MoneyManagerApp() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setCalculatorInitialTab('receipt');
+                setCalculatorOpen(true);
+              }}
+              aria-label="হিসাব ক্যালকুলেটর"
+              title="হিসাব ক্যালকুলেটর"
+              className="min-h-[36px] min-w-[36px] px-2.5 py-1.5 rounded-xl border border-slate-200/90 bg-white hover:bg-[#E7F6EE]/60 hover:border-[#137C50]/40 text-xs font-semibold text-slate-700 inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs shrink-0"
+            >
+              <Calculator className="w-4 h-4 text-[#137C50]" />
+              <span className="hidden sm:inline whitespace-nowrap">ক্যালকুলেটর</span>
+            </button>
+
             <PWAInstallButton variant="header" onToast={showToast} />
 
             <button
@@ -1141,7 +1166,17 @@ export default function MoneyManagerApp() {
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <h3 className="text-sm font-bold text-slate-900">দ্রুত লেনদেন যোগ করুন</h3>
-                      <span className="text-[11px] text-slate-400">১-ট্যাপ এন্ট্রি</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCalculatorInitialTab('receipt');
+                          setCalculatorOpen(true);
+                        }}
+                        className="min-h-[32px] px-2.5 py-1 rounded-xl border border-[#137C50]/25 bg-[#E7F6EE]/70 hover:bg-[#E7F6EE] text-[#137C50] text-[11px] font-semibold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                      >
+                        <Calculator className="w-3.5 h-3.5" />
+                        <span>হিসাব ক্যালকুলেটর</span>
+                      </button>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       <button
@@ -1714,6 +1749,8 @@ export default function MoneyManagerApp() {
                 <ChevronRight className="w-5 h-5 text-slate-400 shrink-0" />
               </button>
 
+
+
               <button
                 type="button"
                 onClick={() => setActiveNav('settings-drive')}
@@ -1807,7 +1844,7 @@ export default function MoneyManagerApp() {
               <button
                 type="button"
                 onClick={() => setActiveNav('settings-reset')}
-                className="w-full min-h-[74px] bg-white border border-slate-200/90 hover:border-[#DC2626]/40 hover:bg-red-50/30 rounded-2xl p-4 sm:px-5 flex items-center justify-between gap-3 text-left transition-colors"
+                className="w-full min-h-[74px] bg-white border border-slate-200/90 hover:border-[#DC2626]/40 hover:bg-red-50/30 rounded-2xl p-4 sm:px-5 flex items-center justify-between gap-3 text-left transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div className="w-11 h-11 rounded-xl bg-red-50 text-[#DC2626] flex items-center justify-center shrink-0">
@@ -1826,6 +1863,8 @@ export default function MoneyManagerApp() {
               </button>
             </section>
           )}
+
+
 
           {/* ==================== DEDICATED GOOGLE DRIVE SYNC PAGE ==================== */}
           {activeNav === 'settings-drive' && (
@@ -1928,11 +1967,24 @@ export default function MoneyManagerApp() {
                 }}
                 className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 space-y-4"
               >
-                <div>
-                  <h2 className="text-base font-bold text-slate-900">হিসাব ও বাজেট সেটিংস</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    দৈনিক, সাপ্তাহিক ও মাসিক খরচের সীমা নির্ধারণ করুন
-                  </p>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-base font-bold text-slate-900">হিসাব ও বাজেট সেটিংস</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      দৈনিক, সাপ্তাহিক ও মাসিক খরচের সীমা নির্ধারণ করুন
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCalculatorInitialTab('budget');
+                      setCalculatorOpen(true);
+                    }}
+                    className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[#137C50]/30 bg-[#E7F6EE]/80 hover:bg-[#E7F6EE] text-[#137C50] text-xs font-semibold inline-flex items-center gap-1.5 transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                  >
+                    <Calculator className="w-3.5 h-3.5 shrink-0" />
+                    <span>ক্যালকুলেটর থেকে সেট করুন</span>
+                  </button>
                 </div>
 
                 <div>
@@ -2244,11 +2296,15 @@ export default function MoneyManagerApp() {
         onClose={() => {
           setModalOpen(false);
           setEditingTx(null);
+          setModalInitialAmount(undefined);
+          setModalInitialDesc(undefined);
         }}
         onSave={handleSaveTransaction}
         initialType={modalInitialType}
         initialCadence={modalInitialCadence}
         initialDate={modalInitialDate}
+        initialAmount={modalInitialAmount}
+        initialDesc={modalInitialDesc}
         editingTx={editingTx}
         useBengaliDigits={useBn}
         incomeCategories={settings.incomeCategories}
@@ -2278,6 +2334,44 @@ export default function MoneyManagerApp() {
         onConfirm={handleClearAllData}
         onCancel={() => setClearConfirmOpen(false)}
       />
+
+      <AnimatePresence>
+        {calculatorOpen && (
+          <HisabCalculatorModal
+            initialTab={calculatorInitialTab}
+            useBengaliDigits={useBn}
+            onToast={showToast}
+            onClose={() => setCalculatorOpen(false)}
+            onApplyToTransaction={({ amount, type, desc }) => {
+              setCalculatorOpen(false);
+              setEditingTx(null);
+              setModalInitialType(type);
+              setModalInitialCadence('দৈনিক');
+              setModalInitialDate(todayISO);
+              setModalInitialAmount(amount);
+              setModalInitialDesc(desc);
+              setModalOpen(true);
+            }}
+            onApplyBudgetLimits={({
+              dailyExpenseLimit,
+              weeklyExpenseLimit,
+              monthlyExpenseLimit,
+              monthlySavingsGoal,
+            }) => {
+              const nextSettings: LedgerSettings = {
+                ...draftSettings,
+                dailyExpenseLimit,
+                weeklyExpenseLimit,
+                monthlyExpenseLimit,
+                monthlySavingsGoal,
+              };
+              updateSettings(nextSettings);
+              setCalculatorOpen(false);
+              showToast('ক্যালকুলেটরের হিসাব অনুযায়ী দৈনিক, সাপ্তাহিক ও মাসিক বাজেট সেট করা হয়েছে');
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Toast Notification */}
       {toast && (

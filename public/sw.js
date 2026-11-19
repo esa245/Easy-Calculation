@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mmp-pro-offline-v1';
+const CACHE_NAME = 'mmp-pro-offline-v2';
 
 const PRECACHE_URLS = [
   '/',
@@ -67,12 +67,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets, Next.js chunks, fonts, and icons: Cache-first / Stale-while-revalidate
+  // Next.js JS/CSS chunks: Network-first so updated or dev bundles are never stale, with offline cache fallback
+  if (url.origin === self.location.origin && url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)).catch(() => {});
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cached = await caches.match(request);
+          return cached || Response.error();
+        })
+    );
+    return;
+  }
+
+  // Static images, fonts, and icons: Cache-first / Stale-while-revalidate
   const isSameOriginAsset =
     url.origin === self.location.origin &&
-    (url.pathname.startsWith('/_next/static/') ||
-      url.pathname.startsWith('/_next/image') ||
-      /\.(?:js|css|png|svg|ico|woff2?|ttf|webmanifest)$/i.test(url.pathname));
+    (url.pathname.startsWith('/_next/image') ||
+      /\.(?:png|svg|ico|woff2?|ttf|webmanifest)$/i.test(url.pathname));
   const isFontAsset =
     url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
 
