@@ -17,6 +17,7 @@ import {
   Database,
   Download,
   Home,
+  Landmark,
   ListOrdered,
   LogIn,
   Minus,
@@ -42,6 +43,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import GoogleDriveSync from '@/components/GoogleDriveSync';
 import HisabCalculatorModal, { CalculatorTab } from '@/components/HisabCalculatorModal';
 import MonthlyArchiveManager from '@/components/MonthlyArchiveManager';
+import MyAssetSection from '@/components/MyAssetSection';
 import PWAInstallButton from '@/components/PWAInstallButton';
 import TransactionModal from '@/components/TransactionModal';
 import UserProfileSection from '@/components/UserProfileSection';
@@ -69,16 +71,24 @@ import {
   generateSampleTransactions,
   getClientTodayISO,
   getServerArchivesSnapshot,
+  getServerAssetChannelsSnapshot,
+  getServerAssetsSnapshot,
   getServerSettingsSnapshot,
   getServerTodayISO,
   getServerTransactionsSnapshot,
   getWeekBounds,
   loadStoredArchives,
+  loadStoredAssetChannels,
+  loadStoredAssets,
   loadStoredSettings,
   loadStoredTransactions,
   saveStoredArchives,
+  saveStoredAssetChannels,
+  saveStoredAssets,
   saveStoredSettings,
   saveStoredTransactions,
+  AssetAccount,
+  CustomAssetChannel,
   shiftDateISO,
   shiftMonthISO,
   subscribeLedger,
@@ -88,6 +98,7 @@ import {
 
 type NavSection =
   | 'home'
+  | 'assets'
   | 'daily'
   | 'weekly'
   | 'monthly'
@@ -116,6 +127,16 @@ export default function MoneyManagerApp() {
     subscribeLedger,
     loadStoredArchives,
     getServerArchivesSnapshot
+  );
+  const assets = useSyncExternalStore(
+    subscribeLedger,
+    loadStoredAssets,
+    getServerAssetsSnapshot
+  );
+  const customAssetChannels = useSyncExternalStore(
+    subscribeLedger,
+    loadStoredAssetChannels,
+    getServerAssetChannelsSnapshot
   );
 
   const todayISO = useSyncExternalStore(
@@ -421,6 +442,8 @@ export default function MoneyManagerApp() {
       settings,
       transactions,
       archives,
+      assets,
+      assetChannels: customAssetChannels,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: 'application/json',
@@ -450,7 +473,13 @@ export default function MoneyManagerApp() {
           showToast('সঠিক ব্যাকআপ ফাইল পাওয়া যায়নি');
           return;
         }
-        handleRestoreAll(importedList, parsed.settings, parsed.archives);
+        handleRestoreAll(
+          importedList,
+          parsed.settings,
+          parsed.archives,
+          parsed.assets,
+          parsed.assetChannels
+        );
         showToast('ব্যাকআপ থেকে হিসাব সফলভাবে পুনরুদ্ধার হয়েছে');
       } catch {
         showToast('ফাইলটি পড়া যায়নি, সঠিক JSON ব্যাকআপ দিন');
@@ -463,7 +492,9 @@ export default function MoneyManagerApp() {
   const handleRestoreAll = (
     importedTransactions: Transaction[],
     importedSettings?: LedgerSettings,
-    importedArchives?: MonthlyArchive[]
+    importedArchives?: MonthlyArchive[],
+    importedAssets?: AssetAccount[],
+    importedAssetChannels?: CustomAssetChannel[]
   ) => {
     const cleaned: Transaction[] = (importedTransactions as unknown[])
       .filter((item: unknown) => typeof item === 'object' && item !== null)
@@ -494,7 +525,18 @@ export default function MoneyManagerApp() {
     if (Array.isArray(importedArchives)) {
       saveStoredArchives(importedArchives);
     }
+    if (Array.isArray(importedAssets)) {
+      saveStoredAssets(importedAssets);
+    }
+    if (Array.isArray(importedAssetChannels)) {
+      saveStoredAssetChannels(importedAssetChannels);
+    }
   };
+
+  const totalAssets = useMemo(
+    () => assets.reduce((sum, item) => sum + Math.max(0, Number(item.balance) || 0), 0),
+    [assets]
+  );
 
 
 
@@ -655,6 +697,7 @@ export default function MoneyManagerApp() {
 
   const navTitleMap: Record<NavSection, string> = {
     home: settings.accountTitle || 'ড্যাশবোর্ড ও সারসংক্ষেপ',
+    assets: 'My Asset — আমার সম্পদ ও জমা',
     daily: 'দৈনিক হিসাব খাতা',
     weekly: 'সাপ্তাহিক হিসাব খাতা',
     monthly: 'মাসিক হিসাব খাতা',
@@ -680,6 +723,7 @@ export default function MoneyManagerApp() {
 
   const sidebarItems: { id: NavSection; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'home', label: 'হোম ও সারসংক্ষেপ', icon: Home },
+    { id: 'assets', label: 'My Asset (সম্পদ)', icon: Landmark },
     { id: 'daily', label: 'দৈনিক হিসাব', icon: CalendarDays },
     { id: 'weekly', label: 'সাপ্তাহিক হিসাব', icon: CalendarRange },
     { id: 'monthly', label: 'মাসিক হিসাব', icon: Calendar },
@@ -1282,6 +1326,35 @@ export default function MoneyManagerApp() {
                 </div>
               </div>
 
+              {/* Home My Asset Quick Access Strip */}
+              {activeNav === 'home' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveNav('assets')}
+                  className="w-full bg-white border border-slate-200/90 hover:border-[#137C50]/40 hover:bg-[#E7F6EE]/20 rounded-2xl px-4 sm:px-5 py-3.5 flex flex-wrap items-center justify-between gap-3 text-left transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-10 h-10 rounded-xl bg-[#E7F6EE] text-[#137C50] flex items-center justify-center shrink-0">
+                      <Landmark className="w-5 h-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-900 truncate">
+                        My Asset — আপনার জমানো টাকা
+                      </p>
+                      <p className="text-xs text-slate-500 truncate mt-0.5">
+                        বিকাশ, নগদ, ব্যাংক ও হাতে নগদ ({formatNumber(assets.length, useBn, 0)}টি হিসাব)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-auto">
+                    <span className="text-base sm:text-lg font-bold text-[#137C50] tabular-nums">
+                      {formatTaka(totalAssets, useBn)}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </div>
+                </button>
+              )}
+
               {/* Home Analytics Row: Cashflow Chart + Budget Limits */}
               {activeNav === 'home' && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
@@ -1702,6 +1775,20 @@ export default function MoneyManagerApp() {
             </section>
           )}
 
+          {/* ==================== MY ASSET PAGE ==================== */}
+          {activeNav === 'assets' && (
+            <section>
+              <MyAssetSection
+                assets={assets}
+                customChannels={customAssetChannels}
+                useBengaliDigits={useBn}
+                onSaveAssets={saveStoredAssets}
+                onSaveCustomChannels={saveStoredAssetChannels}
+                onToast={showToast}
+              />
+            </section>
+          )}
+
           {/* ==================== SETTINGS MENU (UNIFORM ICON CARDS) ==================== */}
           {activeNav === 'settings' && (
             <section className="max-w-3xl space-y-4">
@@ -1884,6 +1971,8 @@ export default function MoneyManagerApp() {
                 settings={settings}
                 transactions={transactions}
                 archives={archives}
+                assets={assets}
+                assetChannels={customAssetChannels}
                 useBengaliDigits={useBn}
                 onRestoreAll={handleRestoreAll}
                 onToast={showToast}

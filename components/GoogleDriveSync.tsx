@@ -11,13 +11,27 @@ import {
   logoutGoogle,
   saveAppDataToGoogleDrive,
 } from '@/lib/gdriveAuth';
-import { LedgerSettings, MonthlyArchive, Transaction } from '@/lib/ledger';
+import {
+  AssetAccount,
+  CustomAssetChannel,
+  LedgerSettings,
+  MonthlyArchive,
+  Transaction,
+} from '@/lib/ledger';
 
 interface GoogleDriveSyncProps {
   settings: LedgerSettings;
   transactions: Transaction[];
   archives: MonthlyArchive[];
-  onRestoreAll: (transactions: Transaction[], settings?: LedgerSettings, archives?: MonthlyArchive[]) => void;
+  assets?: AssetAccount[];
+  assetChannels?: CustomAssetChannel[];
+  onRestoreAll: (
+    transactions: Transaction[],
+    settings?: LedgerSettings,
+    archives?: MonthlyArchive[],
+    assets?: AssetAccount[],
+    assetChannels?: CustomAssetChannel[]
+  ) => void;
   onToast: (msg: string) => void;
   useBengaliDigits: boolean;
 }
@@ -26,6 +40,8 @@ export default function GoogleDriveSync({
   settings,
   transactions,
   archives,
+  assets,
+  assetChannels,
   onRestoreAll,
   onToast,
   useBengaliDigits,
@@ -90,6 +106,8 @@ export default function GoogleDriveSync({
         settings,
         transactions,
         archives,
+        assets: assets ?? [],
+        assetChannels: assetChannels ?? [],
       };
       await saveAppDataToGoogleDrive(token, payload);
       setLastSyncedTime(new Date().toLocaleTimeString('bn-BD'));
@@ -119,8 +137,10 @@ export default function GoogleDriveSync({
       const txs = Array.isArray(data.transactions) ? data.transactions : [];
       const setts = data.settings && typeof data.settings === 'object' ? data.settings : undefined;
       const arvs = Array.isArray(data.archives) ? data.archives : undefined;
+      const asts = Array.isArray(data.assets) ? data.assets : undefined;
+      const chs = Array.isArray(data.assetChannels) ? data.assetChannels : undefined;
 
-      onRestoreAll(txs, setts, arvs);
+      onRestoreAll(txs, setts, arvs, asts, chs);
       setLastSyncedTime(new Date().toLocaleTimeString('bn-BD'));
       onToast('Google Drive থেকে হিসাব সফলভাবে রিস্টোর হয়েছে!');
     } catch (err: any) {

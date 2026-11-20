@@ -53,9 +53,31 @@ export interface MonthlyArchive {
   transactions: Transaction[];
 }
 
+export type BuiltinAssetChannel = 'bkash' | 'nagad' | 'bank' | 'cash' | 'other';
+export type AssetChannel = BuiltinAssetChannel | (string & {});
+
+export interface CustomAssetChannel {
+  id: string;
+  label: string;
+  iconType: 'mobile' | 'bank' | 'cash' | 'piggy' | 'wallet';
+  colorTheme: 'emerald' | 'blue' | 'pink' | 'orange' | 'violet' | 'teal';
+  createdAt: number;
+}
+
+export interface AssetAccount {
+  id: string;
+  channel: AssetChannel;
+  name: string;
+  balance: number;
+  note?: string;
+  updatedAt: number;
+}
+
 export const STORAGE_KEY_V2 = 'mmp_pro_ledger_v2';
 export const STORAGE_KEY_SETTINGS = 'mmp_pro_settings_v2';
 export const STORAGE_KEY_ARCHIVES = 'mmp_pro_monthly_archives_v1';
+export const STORAGE_KEY_ASSETS = 'mmp_pro_assets_v1';
+export const STORAGE_KEY_ASSET_CHANNELS = 'mmp_pro_asset_channels_v1';
 export const LEGACY_STORAGE_KEY = 'mmp_hopweb_v1';
 
 export const INCOME_CATEGORIES = [
@@ -449,6 +471,8 @@ export function getServerTodayISO(): string {
 
 const EMPTY_TRANSACTIONS: Transaction[] = [];
 const EMPTY_ARCHIVES: MonthlyArchive[] = [];
+const EMPTY_ASSETS: AssetAccount[] = [];
+const EMPTY_ASSET_CHANNELS: CustomAssetChannel[] = [];
 const ledgerListeners = new Set<() => void>();
 let cachedTxRaw: string | null | undefined = undefined;
 let cachedTxList: Transaction[] = EMPTY_TRANSACTIONS;
@@ -456,6 +480,10 @@ let cachedSettingsRaw: string | null | undefined = undefined;
 let cachedSettingsObj: LedgerSettings = DEFAULT_SETTINGS;
 let cachedArchivesRaw: string | null | undefined = undefined;
 let cachedArchivesList: MonthlyArchive[] = EMPTY_ARCHIVES;
+let cachedAssetsRaw: string | null | undefined = undefined;
+let cachedAssetsList: AssetAccount[] = EMPTY_ASSETS;
+let cachedAssetChannelsRaw: string | null | undefined = undefined;
+let cachedAssetChannelsList: CustomAssetChannel[] = EMPTY_ASSET_CHANNELS;
 let legacyChecked = false;
 
 function notifyLedgerListeners() {
@@ -473,11 +501,15 @@ export function subscribeLedger(listener: () => void): () => void {
     if (
       e.key === STORAGE_KEY_V2 ||
       e.key === STORAGE_KEY_SETTINGS ||
-      e.key === STORAGE_KEY_ARCHIVES
+      e.key === STORAGE_KEY_ARCHIVES ||
+      e.key === STORAGE_KEY_ASSETS ||
+      e.key === STORAGE_KEY_ASSET_CHANNELS
     ) {
       cachedTxRaw = undefined;
       cachedSettingsRaw = undefined;
       cachedArchivesRaw = undefined;
+      cachedAssetsRaw = undefined;
+      cachedAssetChannelsRaw = undefined;
       listener();
     }
   };
@@ -498,6 +530,102 @@ export function getServerSettingsSnapshot(): LedgerSettings {
 
 export function getServerArchivesSnapshot(): MonthlyArchive[] {
   return EMPTY_ARCHIVES;
+}
+
+export function getServerAssetsSnapshot(): AssetAccount[] {
+  return EMPTY_ASSETS;
+}
+
+export function getServerAssetChannelsSnapshot(): CustomAssetChannel[] {
+  return EMPTY_ASSET_CHANNELS;
+}
+
+export function loadStoredAssetChannels(): CustomAssetChannel[] {
+  if (typeof window === 'undefined') return EMPTY_ASSET_CHANNELS;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY_ASSET_CHANNELS);
+    if (!raw) {
+      cachedAssetChannelsRaw = null;
+      cachedAssetChannelsList = EMPTY_ASSET_CHANNELS;
+      return EMPTY_ASSET_CHANNELS;
+    }
+    if (raw === cachedAssetChannelsRaw) return cachedAssetChannelsList;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      cachedAssetChannelsRaw = raw;
+      cachedAssetChannelsList = parsed;
+      return cachedAssetChannelsList;
+    }
+  } catch {
+    return EMPTY_ASSET_CHANNELS;
+  }
+  cachedAssetChannelsRaw = null;
+  cachedAssetChannelsList = EMPTY_ASSET_CHANNELS;
+  return EMPTY_ASSET_CHANNELS;
+}
+
+export function saveStoredAssetChannels(channels: CustomAssetChannel[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const serialized = JSON.stringify(channels);
+    window.localStorage.setItem(STORAGE_KEY_ASSET_CHANNELS, serialized);
+    cachedAssetChannelsRaw = serialized;
+    cachedAssetChannelsList = channels;
+    notifyLedgerListeners();
+  } catch {
+    // ignore storage quota errors gracefully
+  }
+}
+
+export function createCustomAssetChannel(
+  label: string,
+  iconType: CustomAssetChannel['iconType'],
+  colorTheme: CustomAssetChannel['colorTheme']
+): CustomAssetChannel {
+  return {
+    id: `ch_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    label,
+    iconType,
+    colorTheme,
+    createdAt: Date.now(),
+  };
+}
+
+export function loadStoredAssets(): AssetAccount[] {
+  if (typeof window === 'undefined') return EMPTY_ASSETS;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY_ASSETS);
+    if (!raw) {
+      cachedAssetsRaw = null;
+      cachedAssetsList = EMPTY_ASSETS;
+      return EMPTY_ASSETS;
+    }
+    if (raw === cachedAssetsRaw) return cachedAssetsList;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      cachedAssetsRaw = raw;
+      cachedAssetsList = parsed;
+      return cachedAssetsList;
+    }
+  } catch {
+    return EMPTY_ASSETS;
+  }
+  cachedAssetsRaw = null;
+  cachedAssetsList = EMPTY_ASSETS;
+  return EMPTY_ASSETS;
+}
+
+export function saveStoredAssets(assets: AssetAccount[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const serialized = JSON.stringify(assets);
+    window.localStorage.setItem(STORAGE_KEY_ASSETS, serialized);
+    cachedAssetsRaw = serialized;
+    cachedAssetsList = assets;
+    notifyLedgerListeners();
+  } catch {
+    // ignore storage quota errors gracefully
+  }
 }
 
 export function loadStoredArchives(): MonthlyArchive[] {
